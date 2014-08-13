@@ -25,5 +25,8 @@
   "license": "MIT",
   "devDependencies": {
     "pre-commit": "git://github.com/observing/pre-commit.git"
+  },
+  "dependencies": {
+    "which": "1.0.x"
   }
 }
