@@ -13,7 +13,7 @@ child.exec('git status --porcelain', function changes(err, status) {
     return process.exit(1);
   }
 
-  child.exec('git rev-parse --show-toplevel', run.bind(null, status));
+  child.exec('git rev-parse --show-toplevel', runs.bind(null, status));
 });
 
 /**
@@ -30,7 +30,8 @@ function failure(err) {
   if (err.ran) {
     console.error('pre-commit: The "npm run '+ err.ran +'" script failed.');
   } else {
-    var stack = err.stack.split('\n')
+    var stack = err.stack.split('\n');
+
     console.error('pre-commit: An Error was thrown: '+ stack.shift());
     console.error('pre-commit:');
     stack.forEach(function trace(line) {
@@ -54,7 +55,7 @@ function failure(err) {
  * @param {Error} output The output of rev-parse.
  * @api private
  */
-function run(status, err, output) {
+function runs(status, err, output) {
   if (err) {
     console.error('');
     console.error('pre-commit: Failed to find git root. Cannot run the tests.');
