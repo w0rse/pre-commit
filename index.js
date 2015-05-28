@@ -156,11 +156,11 @@ Hook.prototype.initialize = function initialize() {
   //
   if (!this.git) return this.log(this.format(Hook.log.binary, 'git'), 0);
 
-  this.root = this.shelly.exec(this.git +' rev-parse --show-toplevel', {
+  this.root = this.shelly.exec('git rev-parse --show-toplevel', {
     silent: true
   });
 
-  this.status = this.shelly.exec(this.git +' status --porcelain', {
+  this.status = this.shelly.exec('git status --porcelain', {
     silent: true
   });
 
@@ -189,7 +189,7 @@ Hook.prototype.initialize = function initialize() {
   // execute.
   //
   if (this.config.template) {
-    this.shelly.exec(this.git +' config commit.template "'+ this.config.template +'"', {
+    this.shelly.exec('git config commit.template "'+ this.config.template +'"', {
       silent: true
     });
   }
@@ -209,24 +209,10 @@ Hook.prototype.run = function runner() {
     if (!scripts.length) return hooked.exit(0);
 
     var script = scripts.shift();
+    var code = hooked.shelly.exec('npm run '+script+' --silent').code;
+    if (code) return hooked.log(hooked.format(Hook.log.failure, script, code));
+    again(scripts);
 
-    //
-    // There's a reason on why we're using an async `spawn` here instead of the
-    // `shelly.exec`. The sync `exec` is a hack that writes writes a file to
-    // disk and they poll with sync fs calls to see for results. The problem is
-    // that the way they capture the output which us using input redirection and
-    // this doesn't have the required `isAtty` information that libraries use to
-    // output colors resulting in script output that doesn't have any color.
-    //
-    spawn(hooked.npm, ['run', script, '--silent'], {
-      env: process.env,
-      cwd: hooked.root,
-      stdio: [0, 1, 2]
-    }).once('close', function closed(code) {
-      if (code) return hooked.log(hooked.format(Hook.log.failure, script, code));
-
-      again(scripts);
-    });
   })(hooked.config.run.slice(0));
 };
 
